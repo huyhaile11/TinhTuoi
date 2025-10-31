@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>✈️ Kiểm tra tuổi & tuổi thai theo hãng (7C / 9G / VU)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #f5f7ff; }
+    .card { background: #fff; border-radius: 1rem; box-shadow: 0 6px 18px rgba(0,0,0,0.06); }
+    .toast {
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      background: rgba(99, 102, 241, 0.95); color: white; padding: 12px 20px;
+      border-radius: 10px; font-weight: 600; z-index: 9999; animation: fadeInOut 2.2s forwards;
+    }
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translate(-50%, -55%); }
+      10%, 90% { opacity: 1; transform: translate(-50%, -50%); }
+      100% { opacity: 0; transform: translate(-50%, -45%); }
+    }
+    .muted { color: #6b7280; font-size: 0.9rem; }
+    .badge { display:inline-block; padding:8px 12px; border-radius:999px; font-weight:700; }
+  </style>
+</head>
+<body class="p-4">
+  <div class="max-w-lg mx-auto card p-5 space-y-5">
+    <div class="text-center">
+      <h1 class="text-xl font-bold text-indigo-600">🧾 KIỂM TRA TUỔI & TUỔI THAI (7C / 9G / VU)</h1>
+      <p class="text-sm text-gray-500 mt-1">Nhập ngày sinh, ngày khám thai & tuần trên giấy → áp dụng quy định theo hãng</p>
+    </div>
+
+    <!-- Shared reference date/time -->
+    <div class="space-y-2">
+      <label class="font-semibold text-gray-700 text-sm">Ngày giờ tham chiếu</label>
+      <input id="refDate" type="datetime-local" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400" />
+      <p class="muted">Mặc định là thời gian hiện tại (giờ địa phương của máy).</p>
+    </div>
+
+    <!-- Section 1: Age check -->
+    <div class="border-t pt-4">
+      <h2 class="font-semibold text-indigo-600">🔎 Kiểm tra độ tuổi hành khách</h2>
+      <div class="mt-3 space-y-3">
+        <div>
+          <label class="font-medium text-gray-700 text-sm">Ngày sinh</label>
+          <input id="dob" type="date" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <button id="calcAge" class="bg-indigo-600 text-white rounded-lg py-3 font-semibold hover:bg-indigo-700">📅 Tính tuổi</button>
+          <button id="resetAge" class="bg-yellow-500 text-white rounded-lg py-3 font-semibold hover:bg-yellow-600">🧹 Làm mới</button>
+        </div>
+        <div id="ageResult" class="hidden mt-3 text-center">
+          <p id="ageText" class="text-lg font-semibold text-gray-700"></p>
+          <p id="typeText" class="text-2xl font-bold mt-2"></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: Pregnancy (7C/9G/VU) -->
+    <div class="border-t pt-4">
+      <h2 class="font-semibold text-indigo-600">🤰 Tính tuần tuổi thai (Áp dụng theo hãng)</h2>
+      <div class="mt-3 space-y-3">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="font-medium text-gray-700 text-sm">Chọn hãng</label>
+            <select id="airline" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+              <option value="7C">7C (mặc định)</option>
+              <option value="9G">9G</option>
+              <option value="VU">VU</option>
+            </select>
+          </div>
+          <div class="flex items-end gap-2">
+            <label class="flex items-center gap-2 text-sm">
+              <input id="isTwin" type="checkbox" /> <span>Song thai</span>
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <label class="font-medium text-gray-700 text-sm">Ngày khám thai (trên giấy)</label>
+          <input id="examDate" type="date" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="font-medium text-gray-700 text-sm">Tuần thai (trên giấy)</label>
+            <input id="examWeeks" type="number" min="0" step="1" placeholder="VD: 18" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400" />
+          </div>
+          <div>
+            <label class="font-medium text-gray-700 text-sm">Ngày (0–6)</label>
+            <input id="examDays" type="number" min="0" max="6" step="1" placeholder="VD: 3" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <button id="calcPreg" class="bg-indigo-600 text-white rounded-lg py-3 font-semibold hover:bg-indigo-700">🤰 Tính tuổi thai</button>
+          <button id="resetPreg" class="bg-yellow-500 text-white rounded-lg py-3 font-semibold hover:bg-yellow-600">🧹 Làm mới</button>
+        </div>
+
+        <div id="pregResult" class="hidden mt-3 text-left space-y-2">
+          <p id="pregCurrent" class="text-lg font-semibold text-gray-700"></p>
+          <p id="pregStart" class="text-sm text-gray-600"></p>
+          <div id="pregRules" class="space-y-1"></div>
+          <p id="pregConclusion" class="text-xl font-bold mt-2"></p>
+          <p id="pregNote" class="text-sm text-gray-500 mt-2">Lưu ý: kết luận theo chính sách hãng đã chọn.</p>
+        </div>
+      </div>
+    </div>
+
+    <p class="text-center text-sm font-semibold mt-4 text-gray-500">
+      ✨ Created by <span class="font-bold">Hải 9</span> — Tool kiểm tra nhanh ✨
+    </p>
+  </div>
+
+  <div id="toast"></div>
+
+  <script>
+    // Helpers
+    const c = id => document.getElementById(id);
+    const showToast = (msg) => {
+      const t = document.createElement("div");
+      t.className = "toast";
+      t.textContent = msg;
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 2000);
+    };
+
+    // --- Set refDate default to local time (fix for toISOString UTC behavior) ---
+    const now = new Date();
+    const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+    c("refDate").value = local.toISOString().slice(0,16);
+
+    // Age helpers
+    function calcAgeDetail(dob, ref) {
+      let years = ref.getFullYear() - dob.getFullYear();
+      let months = ref.getMonth() - dob.getMonth();
+      let days = ref.getDate() - dob.getDate();
+
+      if (days < 0) {
+        months--;
+        const prevMonth = new Date(ref.getFullYear(), ref.getMonth(), 0);
+        days += prevMonth.getDate();
+      }
+      if (months < 0) {
+        years--;
+        months += 12;
+      }
+      return { years, months, days };
+    }
+    function determineAgeType(years) {
+      if (years < 2) return "INF";
+      if (years < 12) return "CHD";
+      return "ADL";
+    }
+
+    // Pregnancy helpers
+    function parseLocalDate(dateStr) {
+      if (!dateStr) return null;
+      const parts = dateStr.split("-");
+      if (parts.length < 3) return null;
+      const y = parseInt(parts[0], 10), m = parseInt(parts[1],10)-1, d = parseInt(parts[2],10);
+      return new Date(y, m, d, 0, 0, 0, 0);
+    }
+    function daysBetween(dateFrom, dateTo) {
+      const msPerDay = 24*60*60*1000;
+      const diff = dateTo.getTime() - dateFrom.getTime();
+      return Math.floor(diff / msPerDay);
+    }
+
+    function calcPregnancy(examDateStr, examWeeks, examDays, refDate) {
+      const examDate = parseLocalDate(examDateStr);
+      if (!examDate) return { error: "Ngày khám thai không hợp lệ" };
+      if (isNaN(examWeeks) || examWeeks < 0) return { error: "Tuần thai không hợp lệ" };
+      if (isNaN(examDays) || examDays < 0 || examDays > 6) return { error: "Ngày (0-6) không hợp lệ" };
+
+      const totalAtExam = Math.floor(examWeeks)*7 + Math.floor(examDays);
+      const daysPassed = daysBetween(examDate, refDate);
+      if (daysPassed < 0) return { error: "Ngày khám thai sau ngày tham chiếu" };
+
+      const totalNow = totalAtExam + daysPassed;
+      const weeksNow = Math.floor(totalNow / 7);
+      const daysNow = totalNow % 7;
+
+      const conception = new Date(examDate.getTime() - totalAtExam * 24*60*60*1000);
+
+      return {
+        weeksNow,
+        daysNow,
+        totalNow,
+        conceptionDate: conception,
+        examDate,
+        totalAtExam,
+        daysPassed
+      };
+    }
+
+    // Format
+    const fmtDate = d => {
+      const dd = String(d.getDate()).padStart(2,"0");
+      const mm = String(d.getMonth()+1).padStart(2,"0");
+      const yy = d.getFullYear();
+      return `${dd}/${mm}/${yy}`;
+    };
+
+    // Wire Age calculation
+    c("calcAge").addEventListener("click", () => {
+      const dobVal = c("dob").value;
+      const refVal = c("refDate").value;
+      if (!dobVal) { showToast("Vui lòng nhập ngày sinh!"); return; }
+      const dob = new Date(dobVal + "T00:00");
+      const ref = refVal ? new Date(refVal) : new Date();
+      if (dob.getTime() > ref.getTime()) { showToast("Ngày sinh không hợp lệ (sau ngày tham chiếu)!"); return; }
+
+      const { years, months, days } = calcAgeDetail(dob, ref);
+      const type = determineAgeType(years);
+
+      let typeText = "";
+      if (type === "INF") typeText = "👶 INFANT (Dưới 2 tuổi)";
+      else if (type === "CHD") typeText = "🧒 CHILDREN (Từ 2 đến dưới 12 tuổi)";
+      else typeText = "🧑 ADULT (Từ 12 tuổi trở lên)";
+
+      c("ageText").textContent = `Tuổi chính xác: ${years} năm ${months} tháng ${days} ngày`;
+      c("typeText").textContent = typeText;
+      c("ageResult").classList.remove("hidden");
+      showToast(`Kết quả: ${type}`);
+    });
+
+    c("resetAge").addEventListener("click", () => {
+      c("dob").value = "";
+      c("ageResult").classList.add("hidden");
+      showToast("Đã làm mới phần tuổi hành khách");
+    });
+
+    // Wire Pregnancy calculation (with airline rules)
+    c("calcPreg").addEventListener("click", () => {
+      const airline = c("airline").value; // '7C' | '9G' | 'VU'
+      const isTwin = c("isTwin").checked;
+      const examDateStr = c("examDate").value;
+      const examWeeks = Number(c("examWeeks").value);
+      const examDays = Number(c("examDays").value);
+      const refVal = c("refDate").value;
+      const ref = refVal ? new Date(refVal) : new Date();
+
+      const res = calcPregnancy(examDateStr, examWeeks, examDays, ref);
+      if (res.error) { showToast(res.error); return; }
+
+      // Basic info
+      const weeks = res.weeksNow;
+      const days = res.daysNow;
+      const daysPassed = res.daysPassed; // days since exam
+      const rulesEl = c("pregRules");
+      rulesEl.innerHTML = "";
+
+      // Per-airline logic
+      let conclusion = "";
+      let conclusionColor = "";
+
+      if (airline === "7C") {
+        if (weeks < 32) {
+          conclusion = "✅ Phục vụ bình thường";
+          conclusionColor = "text-green-700";
+          rulesEl.innerHTML += `<div>7C: &lt;32w → Phục vụ bình thường.</div>`;
+        } else if (weeks >= 32 && weeks < 37) {
+          conclusion = "⚠️ Ký miễn trừ (exemption required)";
+          conclusionColor = "text-yellow-700";
+          rulesEl.innerHTML += `<div>7C: 32–&lt;37w → Ký miễn trừ.</div>`;
+        } else {
+          conclusion = "⛔ Từ chối vận chuyển";
+          conclusionColor = "text-red-700";
+          rulesEl.innerHTML += `<div>7C: ≥37w → Từ chối vận chuyển.</div>`;
+        }
+      } else if (airline === "9G") {
+        // 9G rules:
+        // <28: need paper confirming GA
+        // 28–<32: need paper within 15 days (check daysPassed <= 15); if twin -> need MEDIF II within 7 days (check daysPassed <=7)
+        // 32–<36: need MEDIF II
+        // >=36: reject (user confirmed)
+        if (weeks < 28) {
+          conclusion = "🩺 Cần giấy khám xác định tuần tuổi thai";
+          conclusionColor = "text-blue-700";
+          rulesEl.innerHTML += `<div>9G: &lt;28w → Cần giấy khám xác định tuần tuổi thai.</div>`;
+        } else if (weeks >= 28 && weeks < 32) {
+          // need paper within 15 days
+          const ok15 = (res.daysPassed <= 15);
+          rulesEl.innerHTML += `<div>9G: 28–&lt;32w → Cần giấy khám trong vòng 15 ngày (so sánh ngày khám với ngày tham chiếu).</div>`;
+          rulesEl.innerHTML += `<div>Giấy khám đã cách ngày tham chiếu: ${res.daysPassed} ngày → ${ok15 ? '<span class="text-green-700 font-semibold">Hợp lệ (≤15 ngày)</span>' : '<span class="text-red-700 font-semibold">Quá hạn (>15 ngày)</span>'}.</div>`;
+          if (isTwin) {
+            // twin requires MEDIF II within 7 days
+            const ok7 = (res.daysPassed <= 7);
+            rulesEl.innerHTML += `<div>Song thai: cần MEDIF II (hạn 7 ngày). Giấy khám đã cách: ${res.daysPassed} ngày → ${ok7 ? '<span class="text-green-700 font-semibold">Hợp lệ (≤7 ngày)</span>' : '<span class="text-red-700 font-semibold">Quá hạn (>7 ngày)</span>'}.</div>`;
+          }
+          conclusion = "🩺 Cần giấy khám / xem MEDIF theo yêu cầu 9G";
+          conclusionColor = ok15 ? "text-yellow-700" : "text-red-700";
+        } else if (weeks >= 32 && weeks < 36) {
+          conclusion = "⚠️ Cần mẫu thông tin MEDIF II";
+          conclusionColor = "text-yellow-700";
+          rulesEl.innerHTML += `<div>9G: 32–&lt;36w → Cần mẫu thông tin MEDIF II.</div>`;
+        } else {
+          conclusion = "⛔ Từ chối vận chuyển (≥36w)";
+          conclusionColor = "text-red-700";
+          rulesEl.innerHTML += `<div>9G: ≥36w → Từ chối vận chuyển.</div>`;
+        }
+      } else if (airline === "VU") {
+        // VU rules:
+        // <=27: serve normal and need exam within 7 days
+        // >27 to <=32: need MEDIF I + MEDIF II + proof of weeks & health
+        // >32: reject
+        if (weeks <= 27) {
+          const ok7 = (res.daysPassed <= 7);
+          rulesEl.innerHTML += `<div>VU: ≤27w → Phục vụ bình thường. Cần giấy khám trong vòng 7 ngày.</div>`;
+          rulesEl.innerHTML += `<div>Giấy khám đã cách: ${res.daysPassed} ngày → ${ok7 ? '<span class="text-green-700 font-semibold">Hợp lệ (≤7 ngày)</span>' : '<span class="text-red-700 font-semibold">Quá hạn (>7 ngày)</span>'}.</div>`;
+          conclusion = "✅ Phục vụ bình thường (theo điều kiện giấy tờ)";
+          conclusionColor = ok7 ? "text-green-700" : "text-yellow-700";
+        } else if (weeks > 27 && weeks <= 32) {
+          conclusion = "⚠️ Cần MEDIF I + MEDIF II + giấy tờ chứng minh số tuần và sức khỏe";
+          conclusionColor = "text-yellow-700";
+          rulesEl.innerHTML += `<div>VU: &gt;27–≤32w → Cần MEDIF I + MEDIF II và giấy tờ chứng minh số tuần & sức khỏe.</div>`;
+        } else {
+          conclusion = "⛔ Từ chối vận chuyển (>32w)";
+          conclusionColor = "text-red-700";
+          rulesEl.innerHTML += `<div>VU: &gt;32w → Từ chối vận chuyển.</div>`;
+        }
+      }
+
+      // Render results
+      c("pregCurrent").textContent = `Thai hiện tại (đến ${fmtDate(ref)}): ${weeks} tuần ${days} ngày`;
+      c("pregStart").textContent = `Ngày bắt đầu thai ước tính: ${fmtDate(res.conceptionDate)} (dựa trên ${Math.floor(res.totalAtExam)} ngày tại ngày khám).`;
+      c("pregConclusion").innerHTML = `<span class="badge ${conclusionColor}">${conclusion} — ${weeks}w ${days}d</span>`;
+      c("pregResult").classList.remove("hidden");
+      showToast(`Tuổi thai: ${weeks}w ${days}d — Quy tắc: ${airline}`);
+    });
+
+    c("resetPreg").addEventListener("click", () => {
+      c("examDate").value = "";
+      c("examWeeks").value = "";
+      c("examDays").value = "";
+      c("isTwin").checked = false;
+      c("pregResult").classList.add("hidden");
+      c("pregRules").innerHTML = "";
+      showToast("Đã làm mới phần tuổi thai");
+    });
+
+    // Hide results if refDate changed manually to avoid confusion
+    c("refDate").addEventListener("change", () => {
+      c("ageResult").classList.add("hidden");
+      c("pregResult").classList.add("hidden");
+    });
+  </script>
+</body>
+</html>
